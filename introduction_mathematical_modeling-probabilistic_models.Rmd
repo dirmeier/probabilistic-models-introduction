@@ -1,0 +1,166 @@
+---
+title: "Introduction to Probabilistic Models"
+output:
+  html_document
+---
+
+```{r setup, include=FALSE}
+  knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Maximum Likelihood for binomial distributions
+
+The binomial distribution models the number of successes $k$ in $n$ Bernoulli trials. Let's have a look
+how the distribution looks for different success rates $p$.
+
+```{r}
+  plot(0:10,
+       dbinom(0:10, 10, prob=.1),
+       col=rgb(0, 0 , 1, .5),
+       xlim=c(0, 10), type="h", lwd=3,
+       main="Binomial distribution with different success probabilities",
+       xlab="Count success",
+       ylab="Frequency")
+  points(0:10, dbinom(0:10, 10, prob=.5),
+         col=rgb(0, 1, 0, .5), type="h", lwd=3)
+  points(0:10, dbinom(0:10, 10, prob=.8),
+         col=rgb(1, 0, 0, .5), type="h", lwd=3)
+  legend("topright", col=c(rgb(0, 0, 1, .5), rgb(0, 1, 0, .5), rgb(1, 0, 0, .5)),
+         lwd=3, paste0("P=", c(.1, .5, .8)))
+```
+
+To find the *maximum likelihood estimate* for $p$ we can either set the derivative of the likelihood to 0, or do it computationally.
+
+Define the likelihood:
+```{r}
+  binom.likelihood <- function(p, n, k)
+  {
+    dbinom(x=k, size=n, prob=p)
+  }
+```
+
+
+Set some data:
+```{r}
+  tails <- 0
+  heads <- 1
+  tosses <- c(tails, heads, tails, tails, tails,
+              heads, heads, tails, heads, tails,
+              tails, heads, tails, tails, heads)
+
+
+  n <- length(tosses)
+  k <- sum(tosses == heads)
+```
+
+`Optimize` the likelihood function, i.e., find its maximum. (For functions with multiple variables use `optim`). Usually we use the *negative log-likelihood* for optimization, then find its minimum. But the two approaches are identical.
+
+```{r}
+  p.mle <- optimize(binom.likelihood,
+                    interval=c(0, 1),
+                    n=n, k=k,
+                    maximum=TRUE)$maximum
+
+  cat(paste0("The MLE of p=", p.mle))
+  lik <-  binom.likelihood(p.mle, n, k)
+  cat(paste0("The Likelihood is ", lik))
+```
+
+Plot the results:
+```{r}
+  curve(binom.likelihood(x, n=n, k=k), from=0, to=1, col="orange",
+        ylim=c(0, 1), xlab="p", ylab="Likelihood")
+  points(p.mle, binom.likelihood(p.mle, n, k) , col="red", lwd=3 )
+  abline(v = p.mle, col=1, lty=4)
+  abline(h = binom.likelihood(p.mle, n, k), col=1, lty=4)
+  legend("topright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3),
+         pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
+```
+
+
+### Poisson distribution
+
+The Poisson distribution models the number of events $k$ that happen in a fixed time-interval.
+
+```{r}
+  plot(0:20,
+       dpois(0:20, lambda=1),
+       col=rgb(0, 0, 1, .5),
+       xlim=c(0, 20), type="h", lwd=3,
+       main="Poisson distribution with different means",
+       xlab="Count of successes",
+       ylab="Probability")
+  points(0:20, dpois(0:20, lambda=5),
+         col=rgb(0, 1 , 0, .5), type="h", lwd=3)
+  points(0:20, dpois(0:20, lambda=8),
+         col=rgb(1, 0 , 0, .5), type="h", lwd=3)
+  legend("topright", col=c(rgb(0, 0, 1, .5), rgb(0, 1 , 0, .5), rgb(1, 0, 0, .5)) ,
+         lwd=3, c(
+           expression(paste(lambda,"=", 1)),
+           expression(paste(lambda,"=", 5)),
+           expression(paste(lambda,"=", 8))))
+```
+
+### Markov Chains
+
+Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the Eigenvectors for the Eigenvalue 1.
+
+Setup the transition matrix:
+```{r}
+  T <- matrix(c(.4, .9, .6, .1), ncol=2)
+  ev <- eigen(t(T))
+  ev
+```
+
+Find the Eigenvectors. The stationary distribution is *unique* for ergodic Markov chains and independent of the starting distribution.
+```{r}
+  eigen.values <- ev$vectors[,which(ev$values == 1)]
+  stationary.distribution <- eigen.values / sum(eigen.values)
+  stationary.distribution
+```
+
+### Inference in Bayesian Networks
+
+Load some libraries:
+```{r, echo=TRUE, include=TRUE, warning=FALSE, message=FALSE}
+  library(bnlearn)
+  library(tibble)
+```
+
+Create the data:
+```{r}
+  df <- data.frame(
+    A = as.character(c(0, 0, 0, 1, 1, 0, 1, 1, 1)),
+    B = as.character(c(0, 0, 0, 1, 0, 0, 1, 0, 0)),
+    C = as.character(c(0, 0, 0, 1, 1, 0, 1, 0, 0)),
+    D = as.character(c(0, 0, 0, 1, 1, 1, 1, 0, 1)),
+    E = as.character(c(0, 1, 1, 0, 0, 1, 0, 1, 1))
+  )
+
+  as.tibble(df)
+```
+
+Setup the Bayesian network structure (we could also learn this from the data):
+```{r}
+  dag <- empty.graph(toupper(letters[1:5]))
+  arc.set <- matrix(
+    c("A", "B", "A", "D", "B", "C", "E", "B"),
+    ncol = 2, byrow = TRUE,
+    dimnames = list(NULL, c("from", "to")))
+  arcs(dag) <- arc.set
+  plot(dag)
+```
+
+Fit the parameters:
+```{r}
+  fit <- bn.fit(dag, df)
+```
+
+Submit some *queries* to find the best maximum conditional probability:
+```{r}
+  cpquery(fit, (A == "1"), (C == "1"))
+  cpquery(fit, (A == "0"), (C == "1"))
+
+  cpquery(fit, (E == "1"), (C == "1"))
+  cpquery(fit, (E == "0"), (C == "1"))
+```
