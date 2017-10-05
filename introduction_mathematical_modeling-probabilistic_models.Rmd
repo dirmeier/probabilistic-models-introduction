@@ -8,6 +8,8 @@ output:
   knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<br><br><br>
+
 ### Maximum Likelihood for binomial distributions
 
 The binomial distribution models the number of successes $k$ in $n$ Bernoulli trials. Let's have a look
@@ -164,3 +166,6 @@ Submit some *queries* to find the best maximum conditional probability:
   cpquery(fit, (E == "1"), (C == "1"))
   cpquery(fit, (E == "0"), (C == "1"))
 ```
+
+
+<br><br><br>&copy; *S. D.*
