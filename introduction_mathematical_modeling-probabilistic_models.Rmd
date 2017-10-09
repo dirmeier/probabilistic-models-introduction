@@ -13,7 +13,7 @@ output:
 ### Maximum Likelihood for binomial distributions
 
 The binomial distribution models the number of successes $k$ in $n$ Bernoulli trials. Let's have a look
-how the distribution looks for different success rates $p$.
+how the distribution looks for different success probabilities $p$.
 
 ```{r}
   plot(0:10,
@@ -28,12 +28,12 @@ how the distribution looks for different success rates $p$.
   points(0:10, dbinom(0:10, 10, prob=.8),
          col=rgb(1, 0, 0, .5), type="h", lwd=3)
   legend("topright", col=c(rgb(0, 0, 1, .5), rgb(0, 1, 0, .5), rgb(1, 0, 0, .5)),
-         lwd=3, paste0("P=", c(.1, .5, .8)))
+         lwd=3, paste0("p=", c(.1, .5, .8)))
 ```
 
 To find the *maximum likelihood estimate* for $p$ we can either set the derivative of the likelihood to 0, or do it computationally.
 
-Define the likelihood:
+First, define the likelihood:
 ```{r}
   binom.likelihood <- function(p, n, k)
   {
@@ -50,12 +50,13 @@ Set some data:
               heads, heads, tails, heads, tails,
               tails, heads, tails, tails, heads)
 
-
   n <- length(tosses)
   k <- sum(tosses == heads)
 ```
 
-`Optimize` the likelihood function, i.e., find its maximum. (For functions with multiple variables use `optim`). Usually we use the *negative log-likelihood* for optimization, then find its minimum. But the two approaches are identical.
+`Optimize` the likelihood function, i.e., find its maximum. (For functions with multiple variables use `optim`). 
+Usually we use the *negative log-likelihood* for optimization, and then find its minimum. 
+The two approaches are however equivalent.
 
 ```{r}
   p.mle <- optimize(binom.likelihood,
@@ -97,33 +98,68 @@ The Poisson distribution models the number of events $k$ that happen in a fixed 
   points(0:20, dpois(0:20, lambda=8),
          col=rgb(1, 0 , 0, .5), type="h", lwd=3)
   legend("topright", col=c(rgb(0, 0, 1, .5), rgb(0, 1 , 0, .5), rgb(1, 0, 0, .5)) ,
-         lwd=3, c(
-           expression(paste(lambda,"=", 1)),
-           expression(paste(lambda,"=", 5)),
-           expression(paste(lambda,"=", 8))))
+         lwd=3, c(expression(paste(lambda,"=", 1)),
+                  expression(paste(lambda,"=", 5)),
+                  expression(paste(lambda,"=", 8))))
 ```
 
 ### Markov Chains
 
-Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the Eigenvectors for the Eigenvalue 1.
+Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue `1`.
 
 Setup the transition matrix:
 ```{r}
   T <- matrix(c(.4, .9, .6, .1), ncol=2)
-  ev <- eigen(t(T))
-  ev
 ```
 
-Find the Eigenvectors. The stationary distribution is *unique* for ergodic Markov chains and independent of the starting distribution.
+Find the *left* Eigenvectors of `T`. This is equivalent to finding the *right* Eigenvectors of `t(T)`. 
+The stationary distribution is *unique* for ergodic Markov chains and independent of the starting distribution.
 ```{r}
+  ev <- eigen(t(T))
+  ev
   eigen.values <- ev$vectors[,which(ev$values == 1)]
   stationary.distribution <- eigen.values / sum(eigen.values)
   stationary.distribution
 ```
 
+<br><br>
+Markov Chains are widely used in computational biology, e.g., in network analysis using diffusion processes. For instance, consider a network of proteins with the following
+structure and transition matrix.
+
+```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
+  library(igraph)
+  set.seed(4)
+  gra <- igraph::barabasi.game(10, directed=FALSE)
+  V(gra)$name <- paste0("Protein ", toupper(letters[1:10]))
+  V(gra)$color <- "#f0f9e8"
+  V(gra)[V(gra)$name == "Protein A"]$color <- "#0868ac"
+  plot(gra)
+  legend("topright", col=c("#0868ac", "#f0f9e8"), 
+         c("hit", "no hit"), pch=19, pt.cex=2.5)
+  adj <- igraph::as_adj(gra)
+  sweep(adj, 1, Matrix::rowSums(adj), "/")
+```
+
+In this case *protein A* would be a statistically significant hit in one of your analyses. 
+Now you want to *diffuse* the effect of the protein to its neighbors by using the Markov chain iteratively.
+
+```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
+  library(igraph)
+  V(gra)[V(gra)$name %in% paste("Protein", c("F", "H", "D", "B", "E"))]$color <- "#7bccc4"
+  V(gra)[V(gra)$name %in% paste("Protein", c("J", "C", "G", "I"))]$color <- "#ccebc5"
+  plot(gra)
+  legend("right", 
+         col=c("#0868ac", "#7bccc4", "#ccebc5"), 
+         c("hit", "maybe interesting", "still no hit"), pch=19, pt.cex=2.5)
+```
+
+So, with *network diffusion* you can, among other things, include genes/proteins that were not part of the prior analysis and stochastically assign a score to each of them.
+This, of course, is not *classical* statistical inference, because we don't use a proper test-statistic. In fact, we don't even have a null hypothesis.
+
 ### Inference in Bayesian Networks
 
 Load some libraries:
+
 ```{r, echo=TRUE, include=TRUE, warning=FALSE, message=FALSE}
   library(bnlearn)
   library(tibble)
@@ -156,6 +192,7 @@ Setup the Bayesian network structure (we could also learn this from the data):
 Fit the parameters:
 ```{r}
   fit <- bn.fit(dag, df)
+  fit
 ```
 
 Submit some *queries* to find the best maximum conditional probability:
