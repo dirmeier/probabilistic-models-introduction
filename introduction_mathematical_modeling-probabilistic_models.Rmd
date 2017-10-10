@@ -205,4 +205,4 @@ Submit some *queries* to find the best maximum conditional probability:
 ```
 
 
-<br><br><br>&copy; *S. D.*
+<br><br><br>&copy; *S. D.* (<a href="https://github.com/dirmeier/probabilistic-models-introduction">GitHub</a>)
