@@ -8,7 +8,13 @@ output:
   knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<br><br><br>
+<br><br>
+
+This document contains some short demos for a probabilistic models exercise. 
+The demos are practical applications (maximum likelihood/optimization, Bayesian networks) of the content taught
+in the exercise to familiarize people with the the theoretical concepts. The demos are not necessarily exact reproductions of the exercises.
+
+<br><br>
 
 ### Maximum Likelihood for binomial distributions
 
@@ -31,9 +37,9 @@ how the distribution looks for different success probabilities $p$.
          lwd=3, paste0("p=", c(.1, .5, .8)))
 ```
 
-To find the *maximum likelihood estimate* for $p$ we can either set the derivative of the likelihood to 0, or do it computationally.
+To find the *maximum likelihood estimate* for $p$ we can either set the derivative of the likelihood function to $0$, or do it computationally.
 
-First, define the likelihood:
+First, we define the likelihood:
 ```{r}
   binom.likelihood <- function(p, n, k)
   {
@@ -41,8 +47,7 @@ First, define the likelihood:
   }
 ```
 
-
-Set some data:
+Then we set some data:
 ```{r}
   tails <- 0
   heads <- 1
@@ -54,7 +59,7 @@ Set some data:
   k <- sum(tosses == heads)
 ```
 
-`Optimize` the likelihood function, i.e., find its maximum. (For functions with multiple variables use `optim`). 
+Then we `optimize` the likelihood function, i.e., find its maximum. (For functions with multiple variables use `optim`). 
 Usually we use the *negative log-likelihood* for optimization, and then find its minimum. 
 The two approaches are however equivalent.
 
@@ -71,8 +76,10 @@ The two approaches are however equivalent.
 
 Plot the results:
 ```{r}
-  curve(binom.likelihood(x, n=n, k=k), from=0, to=1, col="orange",
-        ylim=c(0, 1), xlab="p", ylab="Likelihood")
+  plot(seq(0, 1, length.out=100), 
+       sapply(seq(0, 1, length.out=100), binom.likelihood,n=n, k=k),
+       col="orange", ylim=c(0, 1), xlab="p", ylab="Likelihood", type="l")
+
   points(p.mle, binom.likelihood(p.mle, n, k) , col="red", lwd=3 )
   abline(v = p.mle, col=1, lty=4)
   abline(h = binom.likelihood(p.mle, n, k), col=1, lty=4)
@@ -83,15 +90,15 @@ Plot the results:
 
 ### Poisson distribution
 
-The Poisson distribution models the number of events $k$ that happen in a fixed time-interval.
+The Poisson distribution models the number of events $k$ that happen in a fixed time-interval. Let's visualize it again first.
 
 ```{r}
   plot(0:20,
        dpois(0:20, lambda=1),
        col=rgb(0, 0, 1, .5),
        xlim=c(0, 20), type="h", lwd=3,
-       main="Poisson distribution with different means",
-       xlab="Count of successes",
+       main="Poisson distribution with different mean/lambdas",
+       xlab="Lambda",
        ylab="Probability")
   points(0:20, dpois(0:20, lambda=5),
          col=rgb(0, 1 , 0, .5), type="h", lwd=3)
@@ -103,69 +110,103 @@ The Poisson distribution models the number of events $k$ that happen in a fixed 
                   expression(paste(lambda,"=", 8))))
 ```
 
+First, we define the Poisson likelihood function, as before:
+```{r}
+  poisson.likelihood <- function(x, colonies)
+  {
+    prod(sapply(colonies, function(c) dpois(x=c, lambda=x)))
+  }
+```
+
+Then let's evaluate the likelihood for $3$ colonies and $\lambda = 5$:
+```{r}
+  colonies <- 3
+  
+  lik <-  poisson.likelihood(5, colonies)
+  cat(paste0("The Likelihood is for lambda=5 is: ", lik))
+```
+
+**NOTE**: generally it is a bad idea to rely on the MLE with such a low sample size (here $1$).
+For that reason we use some example data for the next steps.
+```{r}
+  colonies <- c(1,2,4,5,7,2,3,5,6,3,7,2)
+  colonies
+```
+
+Furthermore, since we compute products of probabilities, it makes sense to work in a log-space. Thus, we define the log-likelihood: 
+```{r}
+  poisson.log.likelihood <- function(x, colonies)
+  {
+    sum(sapply(colonies, function(c) log(dpois(x=c, lambda=x))))
+  }
+```
+As noted before, usually people do optimization on the negative log-likelihood, but it really doesn't matter.
+
+Then let's optimize the likelihood with the same procedure as before.
+```{r}
+  p.mle <- optimize(poisson.log.likelihood,
+                    interval=c(0, 1000),
+                    colonies=colonies,
+                    maximum=TRUE)$maximum
+
+  cat(paste0("The MLE of p=", p.mle))
+```
+
+We can quickly check if this is true, because the MLE of a Poisson distribution for $\lambda$ is the mean of the colonies:
+```{r}
+  m.c <- mean(colonies)
+  cat(paste0("The mean of the colonies is: ", m.c))
+```
+That worked just fine. If you see differences in some of the digits after the comma, this is only due to numerical reasons. Nothing to worry about.
+
+Finally, let's plot the results again:
+```{r}
+  plot(seq(0, 20, length.out=1000), 
+       sapply(seq(0, 20, length.out=1000), poisson.log.likelihood, colonies=colonies),
+        col="orange", xlab="p", ylab="Likelihood", type="l")
+
+  points(p.mle, poisson.log.likelihood(p.mle, colonies) , col="red", lwd=3 )
+  abline(v = p.mle, col=1, lty=4)
+  abline(h = poisson.log.likelihood(p.mle, colonies), col=1, lty=4)
+  legend("bottomright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3),
+         pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
+```
+
+If you look at the plot, you should see that the y-axis is negative now. This is due to the fact, that we took the logarithm on the likelihood. So that is normal.
+
 ### Markov Chains
 
-Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue `1`.
+Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue $1$.
 
-Setup the transition matrix:
+First, we setup the transition matrix:
 ```{r}
   T <- matrix(c(.4, .9, .6, .1), ncol=2)
 ```
 
-Find the *left* Eigenvectors of `T`. This is equivalent to finding the *right* Eigenvectors of `t(T)`. 
-The stationary distribution is *unique* for ergodic Markov chains and independent of the starting distribution.
+Now, we need to find the *left* Eigenvectors of `T`. This is equivalent to finding the *right* Eigenvectors of the transpose of `T`: `t(T)`. 
+The stationary distribution is *unique* for ergodic Markov chains and independent of the starting distribution. 
 ```{r}
   ev <- eigen(t(T))
   ev
   eigen.values <- ev$vectors[,which(ev$values == 1)]
+```
+  
+We find the stationary distribution by normalizing the respective eigenvector to sum to `1`.
+```{r}  
   stationary.distribution <- eigen.values / sum(eigen.values)
   stationary.distribution
 ```
 
-<br><br>
-Markov Chains are widely used in computational biology, e.g., in network analysis using diffusion processes. For instance, consider a network of proteins with the following
-structure and transition matrix.
-
-```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
-  library(igraph)
-  set.seed(4)
-  gra <- igraph::barabasi.game(10, directed=FALSE)
-  V(gra)$name <- paste0("Protein ", toupper(letters[1:10]))
-  V(gra)$color <- "#f0f9e8"
-  V(gra)[V(gra)$name == "Protein A"]$color <- "#0868ac"
-  plot(gra)
-  legend("topright", col=c("#0868ac", "#f0f9e8"), 
-         c("hit", "no hit"), pch=19, pt.cex=2.5)
-  adj <- igraph::as_adj(gra)
-  sweep(adj, 1, Matrix::rowSums(adj), "/")
-```
-
-In this case *protein A* would be a statistically significant hit in one of your analyses. 
-Now you want to *diffuse* the effect of the protein to its neighbors by using the Markov chain iteratively.
-
-```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
-  library(igraph)
-  V(gra)[V(gra)$name %in% paste("Protein", c("F", "H", "D", "B", "E"))]$color <- "#7bccc4"
-  V(gra)[V(gra)$name %in% paste("Protein", c("J", "C", "G", "I"))]$color <- "#ccebc5"
-  plot(gra)
-  legend("right", 
-         col=c("#0868ac", "#7bccc4", "#ccebc5"), 
-         c("hit", "maybe interesting", "still no hit"), pch=19, pt.cex=2.5)
-```
-
-So, with *network diffusion* you can, among other things, include genes/proteins that were not part of the prior analysis and stochastically assign a score to each of them.
-This, of course, is not *classical* statistical inference, because we don't use a proper test-statistic. In fact, we don't even have a null hypothesis.
-
 ### Inference in Bayesian Networks
 
-Load some libraries:
+To work with Bayesian networks we first load some libraries:
 
 ```{r, echo=TRUE, include=TRUE, warning=FALSE, message=FALSE}
   library(bnlearn)
   library(tibble)
 ```
 
-Create the data:
+Then, we create the data just as in the exercise:
 ```{r}
   df <- data.frame(
     A = as.character(c(0, 0, 0, 1, 1, 0, 1, 1, 1)),
@@ -178,7 +219,7 @@ Create the data:
   as.tibble(df)
 ```
 
-Setup the Bayesian network structure (we could also learn this from the data):
+We define the Bayesian network structure also as in the exercise (we could also learn this from the data):
 ```{r}
   dag <- empty.graph(toupper(letters[1:5]))
   arc.set <- matrix(
@@ -189,13 +230,13 @@ Setup the Bayesian network structure (we could also learn this from the data):
   plot(dag)
 ```
 
-Fit the parameters:
+Then, we compute the local probability tables (the parameters):
 ```{r}
   fit <- bn.fit(dag, df)
   fit
 ```
 
-Submit some *queries* to find the best maximum conditional probability:
+With this, we are finally able submit some *queries* find the maximum conditional probability as in the exercise:
 ```{r}
   cpquery(fit, (A == "1"), (C == "1"))
   cpquery(fit, (A == "0"), (C == "1"))
