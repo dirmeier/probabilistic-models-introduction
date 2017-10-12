@@ -76,10 +76,8 @@ The two approaches are however equivalent.
 
 Plot the results:
 ```{r}
-  plot(seq(0, 1, length.out=100), 
-       sapply(seq(0, 1, length.out=100), binom.likelihood,n=n, k=k),
+  curve(binom.likelihood(x, n=n, k=k), from=0, to=1,
        col="orange", ylim=c(0, 1), xlab="p", ylab="Likelihood", type="l")
-
   points(p.mle, binom.likelihood(p.mle, n, k) , col="red", lwd=3 )
   abline(v = p.mle, col=1, lty=4)
   abline(h = binom.likelihood(p.mle, n, k), col=1, lty=4)
@@ -114,7 +112,7 @@ First, we define the Poisson likelihood function, as before:
 ```{r}
   poisson.likelihood <- function(x, colonies)
   {
-    prod(sapply(colonies, function(c) dpois(x=c, lambda=x)))
+    sapply(x, function(x1) prod(dpois(x=colonies, lambda=x1)))
   }
 ```
 
@@ -137,7 +135,7 @@ Furthermore, since we compute products of probabilities, it makes sense to work 
 ```{r}
   poisson.log.likelihood <- function(x, colonies)
   {
-    sum(sapply(colonies, function(c) log(dpois(x=c, lambda=x))))
+    sapply(x, function(x1) sum(log(dpois(x=colonies, lambda=x1))))
   }
 ```
 As noted before, usually people do optimization on the negative log-likelihood, but it really doesn't matter.
@@ -161,10 +159,8 @@ That worked just fine. If you see differences in some of the digits after the co
 
 Finally, let's plot the results again:
 ```{r}
-  plot(seq(0, 20, length.out=1000), 
-       sapply(seq(0, 20, length.out=1000), poisson.log.likelihood, colonies=colonies),
+  curve(poisson.log.likelihood(x, colonies=colonies), from=0, to=20,
         col="orange", xlab="p", ylab="Likelihood", type="l")
-
   points(p.mle, poisson.log.likelihood(p.mle, colonies) , col="red", lwd=3 )
   abline(v = p.mle, col=1, lty=4)
   abline(h = poisson.log.likelihood(p.mle, colonies), col=1, lty=4)
