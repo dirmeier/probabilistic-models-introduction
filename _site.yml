@@ -1,0 +1,9 @@
+name: "on-probabilistic-models"
+output:
+  html_document:
+    theme: lumen
+    css: theme.css
+    highlight: pygments
+    lib_dir: site_libs
+    self_contained: no
+output_dir: "."

@@ -1,1 +1,415 @@
-introduction_mathematical_modeling-probabilistic_models.html
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Introduction to Probabilistic Models</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="theme.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Introduction to Probabilistic Models</h1>
+
+</div>
+
+
+<p>This document contains some short demos for a probabilistic models exercise. The demos are practical applications (maximum likelihood/optimization, Bayesian networks) of the content taught in the exercise to familiarize people with the the theoretical concepts. The demos are not necessarily exact reproductions of the exercises.</p>
+<div id="tossing-coins" class="section level1">
+<h1>Tossing coins</h1>
+<p>The binomial distribution models the number of successes <span class="math inline">\(k\)</span> in <span class="math inline">\(n\)</span> Bernoulli trials, each having a success probability of <span class="math inline">\(p\)</span>: <span class="math display">\[
+X \sim \text{Binom}(n, p)
+\]</span> The easiest to understand what it is doing is to think of <span class="math inline">\(n\)</span> coin tosses where every <em>head</em> is a success. The sum of the heads is the value of the Binomial random variable. A normal coin has a success probability of <span class="math inline">\(p = 0.5\)</span>. If we use an unfair coin, it might have a probability of landing on its head like <span class="math inline">\(p=0.3\)</span> or <span class="math inline">\(p=0.8\)</span>. Let’s have a look how the distribution of <em>sum of heads</em> looks for different success probabilities <span class="math inline">\(p\)</span> and <span class="math inline">\(10\)</span> coin tosses:</p>
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Usually, however, we only observe a finite sample of which we don’t know its parameter, thus we need to <em>guess</em> them. What’s do you think is the parameter in the example below?</p>
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>For this simulation I set the success probability to <span class="math inline">\(p = 0.7\)</span>. Thus, <strong>beware</strong>, since we mostly look at samples of small size, we sometimes make wrong guesses about the parameter of interest.</p>
+<p>To find the <em>maximum likelihood estimate</em> - some guess - for <span class="math inline">\(p\)</span> we can either set the derivative of the likelihood function to <span class="math inline">\(0\)</span> (as we’ll do it in the exercise), or do it computationally. Let’s do the analytical derivation first. The likelihood we are interested in optimizing is given by:</p>
+<p><span class="math display">\[
+\mathcal{L}(p)= {n\choose k} p^k(1-p)^{n-k}
+\]</span> Taking the log yields: <span class="math display">\[
+\ell(p) = \log {n \choose k}+k \log(p)+(n-k)\log(1-p)
+\]</span> To obtain the MLE we need to derive <span class="math inline">\(ell(p)\)</span> and solve for zero: <span class="math display">\[
+\ell&#39;(p) = \frac{k}{p} -\frac{n-k}{1-p} = 0 \Rightarrow 0=\frac{k(1-p)-(n-k)p}{p(1-p)}= \frac{k-np}{p-p^2} \Rightarrow p=\frac{k}{n}.
+\]</span></p>
+<p>Computationally, we do the same. First, we define the likelihood:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">binom.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(p, n, k)
+{
+  <span class="kw">dbinom</span>(<span class="dt">x=</span>k, <span class="dt">size=</span>n, <span class="dt">prob=</span>p)
+}</code></pre></div>
+<p>Then we set some data:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tails &lt;-<span class="st"> </span><span class="dv">0</span>
+heads &lt;-<span class="st"> </span><span class="dv">1</span>
+tosses &lt;-<span class="st"> </span><span class="kw">c</span>(tails, heads, tails, tails, tails,
+            heads, heads, tails, heads, tails,
+            tails, heads, tails, tails, heads)
+
+n &lt;-<span class="st"> </span><span class="kw">length</span>(tosses)
+k &lt;-<span class="st"> </span><span class="kw">sum</span>(tosses <span class="op">==</span><span class="st"> </span>heads)</code></pre></div>
+<p>Then we <code>optimize</code> the likelihood function, i.e., find its maximum. (For functions with multiple variables use <code>optim</code>). Usually we use the <em>negative log-likelihood</em> for optimization, and then find its minimum. The two approaches are however equivalent.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p.mle &lt;-<span class="st"> </span><span class="kw">optimize</span>(binom.likelihood,
+                  <span class="dt">interval=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),
+                  <span class="dt">n=</span>n, <span class="dt">k=</span>k,
+                  <span class="dt">maximum=</span><span class="ot">TRUE</span>)<span class="op">$</span>maximum
+
+<span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The MLE using &#39;optimize&#39; of p=&quot;</span>, p.mle))</code></pre></div>
+<pre><code>## The MLE using &#39;optimize&#39; of p=0.399998229931391</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The analytical solution for the MLE of p=&quot;</span>, k<span class="op">/</span>n))</code></pre></div>
+<pre><code>## The analytical solution for the MLE of p=0.4</code></pre>
+<p>Plot the likelihood function and its maximum: <img src="index_files/figure-html/unnamed-chunk-6-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="bacteria-and-petri-dishes" class="section level1">
+<h1>Bacteria and Petri dishes</h1>
+<p>The Poisson distribution models the number of events <span class="math inline">\(k\)</span> that happen in a fixed time-interval. It is usually parametrized by a mean value <span class="math inline">\(\lambda\)</span>: <span class="math display">\[
+X \sim \text{Pois}(\lambda)
+\]</span> One (very abstract) example to think of the Poisson distribution is the number of bacterial colonies in different Petri dishes. On average we would expect to observe <span class="math inline">\(\lambda\)</span> many colonies per dish, however due to stochasticity, such as food availability or space to grow the numbers per dish might vary.</p>
+<p>Let’s visualize it again first. <img src="index_files/figure-html/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>As before we usually do not know the true parameter that governs the number of colonies, so we have to estimate it from a finite sample. And as before we choose to use the maximum likelihood estimator to find the mass function’s parameter which in this case is <span class="math inline">\(\lambda\)</span>.</p>
+<p>Let’s again do the analytical derivation first. The likelihood we are interested in optimizing is given by:</p>
+<p><span class="math display">\[ \mathcal{L} (\lambda) = \prod_{i=1}^n f(k_i; \lambda)= \prod_{i=1}^n \frac{\lambda^{k_i} e^{-\lambda}}{k_i!},\]</span><br />
+where <span class="math inline">\(k_i\)</span> are the bacterial colonies per dish <span class="math inline">\(i\)</span>.</p>
+Taking the log yields:
+<span class="math display">\[\begin{align}
+\ell(\lambda) &amp;= \log \prod_{i=1}^n \frac{\lambda^{k_i} e^{-\lambda}}{k_i!}  \\ 
+&amp; = \sum_{i=1}^n \log \left(\frac{\lambda^{k_i} e^{-\lambda}}{k_i!} \right)= \sum_{i=1}^n \left( -\lambda +k_i \log(\lambda) - \log(k_i!) \right) \\
+&amp;= -n \lambda + \log(\lambda) \sum_{i=1}^n k_i - \sum_{i=1}^n \log(k_i!)
+\end{align}\]</span>
+<p>To obtain the MLE we need to derive <span class="math inline">\(\ell(p)\)</span> and solve for zero: <span class="math display">\[
+\ell&#39;(\lambda)=-n+\frac{1}{\lambda}\sum_{i=1}^n k_i =0 \Rightarrow \lambda=\frac{1}{n}\sum_{i=1}^n k_i.
+\]</span></p>
+<p>If we do this computationally we define the Poisson likelihood function, as before the Binomial:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">poisson.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(x, colonies)
+{
+  <span class="kw">sapply</span>(x, <span class="cf">function</span>(x1) <span class="kw">prod</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>x1)))
+}</code></pre></div>
+<p>Then let’s evaluate the likelihood for <span class="math inline">\(3\)</span> colonies and <span class="math inline">\(\lambda = 5\)</span>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colonies &lt;-<span class="st"> </span><span class="dv">3</span>
+
+lik &lt;-<span class="st">  </span><span class="kw">poisson.likelihood</span>(<span class="dv">5</span>, colonies)
+<span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The Likelihood for lambda=5 is: &quot;</span>, lik))</code></pre></div>
+<pre><code>## The Likelihood for lambda=5 is: 0.140373895814281</code></pre>
+<p><strong>NOTE</strong>: generally it is a bad idea to rely on the MLE with such a low sample size (here <span class="math inline">\(1\)</span>). For that reason we use some example data for the next steps.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colonies &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">7</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">3</span>,<span class="dv">7</span>,<span class="dv">2</span>)</code></pre></div>
+<p>Furthermore, since we compute products of probabilities, it makes sense to work in a log-space. Thus, we define the log-likelihood:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">poisson.log.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(x, colonies)
+{
+  <span class="kw">sapply</span>(x, <span class="cf">function</span>(x1) <span class="kw">sum</span>(<span class="kw">log</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>x1))))
+}</code></pre></div>
+<p>As noted before, usually people do optimization on the negative log-likelihood, but it really doesn’t matter.</p>
+<p>Then let’s optimize the likelihood with the same procedure as before.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p.mle &lt;-<span class="st"> </span><span class="kw">optimize</span>(poisson.log.likelihood,
+                  <span class="dt">interval=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1000</span>),
+                  <span class="dt">colonies=</span>colonies,
+                  <span class="dt">maximum=</span><span class="ot">TRUE</span>)<span class="op">$</span>maximum
+
+<span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The MLE using &#39;optimize&#39; of lambda=&quot;</span>, p.mle))</code></pre></div>
+<pre><code>## The MLE using &#39;optimize&#39; of lambda=3.916650518857</code></pre>
+<p>We can quickly check if this is true, because the MLE of a Poisson distribution for <span class="math inline">\(\lambda\)</span> is the mean of the colonies:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.c &lt;-<span class="st"> </span><span class="kw">mean</span>(colonies)
+<span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The mean of the colonies is: &quot;</span>, m.c))</code></pre></div>
+<pre><code>## The mean of the colonies is: 3.91666666666667</code></pre>
+<p>That worked just fine. If you see differences in some of the digits after the comma, this is only due to numerical reasons. Nothing to worry about.</p>
+<p>Let’s plot the likelihood function and its maximum again: <img src="index_files/figure-html/unnamed-chunk-14-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="markov-chains" class="section level1">
+<h1>Markov Chains</h1>
+<p>Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue <span class="math inline">\(1\)</span>.</p>
+<p>First, we setup the transition matrix:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">T &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(.<span class="dv">4</span>, .<span class="dv">9</span>, .<span class="dv">6</span>, .<span class="dv">1</span>), <span class="dt">ncol=</span><span class="dv">2</span>)</code></pre></div>
+<p>Now, we need to find the <em>left</em> Eigenvectors of <code>T</code>. This is equivalent to finding the <em>right</em> Eigenvectors of the transpose of <code>T</code>: <code>t(T)</code>. The stationary distribution is <em>unique</em> for ergodic Markov chains and independent of the starting distribution.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ev &lt;-<span class="st"> </span><span class="kw">eigen</span>(<span class="kw">t</span>(T))
+ev</code></pre></div>
+<pre><code>## eigen() decomposition
+## $values
+## [1]  1.0 -0.5
+## 
+## $vectors
+##           [,1]       [,2]
+## [1,] 0.8320503 -0.7071068
+## [2,] 0.5547002  0.7071068</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eigen.values &lt;-<span class="st"> </span>ev<span class="op">$</span>vectors[,<span class="kw">which</span>(ev<span class="op">$</span>values <span class="op">==</span><span class="st"> </span><span class="dv">1</span>)]</code></pre></div>
+<p>We find the stationary distribution by normalizing the respective eigenvector to sum to <code>1</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stationary.distribution &lt;-<span class="st"> </span>eigen.values <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(eigen.values)
+stationary.distribution</code></pre></div>
+<pre><code>## [1] 0.6 0.4</code></pre>
+We can also do this by hand, but for larger systems this is inefficient:
+<span class="math display">\[\begin{align*}
+\text{(I) } &amp;\; 0.4 \pi_1 + 0.9 \pi_2 = \pi_1\\
+&amp;\;   \Rightarrow   \pi_1 = \frac{0.9}{0.6} \pi_2 \\
+\text{(II) } &amp; \;  0.6 \pi_1 + 0.1 \pi_2 = \pi_2\\
+\text{(III) } &amp; \;  \pi_1 + \pi_2 = 1\\
+\text{Plugging (I) into (III): } &amp; \; \frac{0.9}{0.6} \pi_2 + \pi_2 = 1\\ 
+                &amp;\;   \Rightarrow   \pi_2 = 0.4 \\
+                &amp;\;   \Rightarrow   \pi_1 = 0.6 \\
+\end{align*}\]</span>
+</div>
+<div id="bayesian-networks" class="section level1">
+<h1>Bayesian networks</h1>
+<p>To work with Bayesian networks we first load some libraries:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(bnlearn)
+<span class="kw">library</span>(tibble)</code></pre></div>
+<p>Then, we create the data just as in the exercise:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">A =</span> <span class="kw">as.character</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)),
+  <span class="dt">B =</span> <span class="kw">as.character</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)),
+  <span class="dt">C =</span> <span class="kw">as.character</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)),
+  <span class="dt">D =</span> <span class="kw">as.character</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)),
+  <span class="dt">E =</span> <span class="kw">as.character</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>))
+)
+
+<span class="kw">as.tibble</span>(df)</code></pre></div>
+<pre><code>## # A tibble: 9 x 5
+##   A     B     C     D     E    
+##   &lt;fct&gt; &lt;fct&gt; &lt;fct&gt; &lt;fct&gt; &lt;fct&gt;
+## 1 0     0     0     0     0    
+## 2 0     0     0     0     1    
+## 3 0     0     0     0     1    
+## 4 1     1     1     1     0    
+## 5 1     0     1     1     0    
+## 6 0     0     0     1     1    
+## 7 1     1     1     1     0    
+## 8 1     0     0     0     1    
+## 9 1     0     0     1     1</code></pre>
+<p>We define the Bayesian network structure also as in the exercise (we could also learn this from the data):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dag &lt;-<span class="st"> </span><span class="kw">empty.graph</span>(<span class="kw">toupper</span>(letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]))
+arc.set &lt;-<span class="st"> </span><span class="kw">matrix</span>(
+  <span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;A&quot;</span>, <span class="st">&quot;D&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;E&quot;</span>, <span class="st">&quot;B&quot;</span>),
+  <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>,
+  <span class="dt">dimnames =</span> <span class="kw">list</span>(<span class="ot">NULL</span>, <span class="kw">c</span>(<span class="st">&quot;from&quot;</span>, <span class="st">&quot;to&quot;</span>)))
+<span class="kw">arcs</span>(dag) &lt;-<span class="st"> </span>arc.set
+<span class="kw">plot</span>(dag)</code></pre></div>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Then, we compute the local probability tables (the parameters):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  fit &lt;-<span class="st"> </span><span class="kw">bn.fit</span>(dag, df)
+  fit</code></pre></div>
+<pre><code>## 
+##   Bayesian network parameters
+## 
+##   Parameters of node A (multinomial distribution)
+## 
+## Conditional probability table:
+##          0         1 
+## 0.4444444 0.5555556 
+## 
+##   Parameters of node B (multinomial distribution)
+## 
+## Conditional probability table:
+##  
+## , , E = 0
+## 
+##    A
+## B           0         1
+##   0 1.0000000 0.3333333
+##   1 0.0000000 0.6666667
+## 
+## , , E = 1
+## 
+##    A
+## B           0         1
+##   0 1.0000000 1.0000000
+##   1 0.0000000 0.0000000
+## 
+## 
+##   Parameters of node C (multinomial distribution)
+## 
+## Conditional probability table:
+##  
+##    B
+## C           0         1
+##   0 0.8571429 0.0000000
+##   1 0.1428571 1.0000000
+## 
+##   Parameters of node D (multinomial distribution)
+## 
+## Conditional probability table:
+##  
+##    A
+## D      0    1
+##   0 0.75 0.20
+##   1 0.25 0.80
+## 
+##   Parameters of node E (multinomial distribution)
+## 
+## Conditional probability table:
+##          0         1 
+## 0.4444444 0.5555556</code></pre>
+<p>With this, we are finally able submit some <em>queries</em> find the maximum conditional probability as in the exercise:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">cpquery</span>(fit, (A <span class="op">==</span><span class="st"> &quot;1&quot;</span>), (C <span class="op">==</span><span class="st"> &quot;1&quot;</span>))</code></pre></div>
+<pre><code>## [1] 0.7829932</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">cpquery</span>(fit, (A <span class="op">==</span><span class="st"> &quot;0&quot;</span>), (C <span class="op">==</span><span class="st"> &quot;1&quot;</span>))</code></pre></div>
+<pre><code>## [1] 0.2167027</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">cpquery</span>(fit, (E <span class="op">==</span><span class="st"> &quot;1&quot;</span>), (C <span class="op">==</span><span class="st"> &quot;1&quot;</span>))</code></pre></div>
+<pre><code>## [1] 0.2772495</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">cpquery</span>(fit, (E <span class="op">==</span><span class="st"> &quot;0&quot;</span>), (C <span class="op">==</span><span class="st"> &quot;1&quot;</span>))</code></pre></div>
+<pre><code>## [1] 0.7165021</code></pre>
+<p><br><br><br>© <em>S. D.</em> (<a href="https://github.com/dirmeier/probabilistic-models-introduction">GitHub</a>)</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

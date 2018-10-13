@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css?family=Inconsolata');
+
+
+body{
+  font-family: "Roboto", "Hind", "Helvetica";
+  font-size: 1.5rem;
+  color: black;
+  line-height: 1.86;
+  text-align: justify;
+}
+
+.level2, .level1, .level3 {
+   margin-top: 5%
+}
+
+code, pre {
+  font-family:  "Inconsolata";
+  font-size: 1.4rem;
+}
+
+
+.tocify {
+  padding-top: 25px;
+  border-radius: 0px;
+  border: 0px;
+  overflow: hidden;
+  font-style: italic;
+}
+
+
+.list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
+   background-color: white;
+   border-color: #f5f5f5;
+   margin-bottom: 6px;
+   margin-top: 6px;
+   color: #1F407A;
+   font-size: 1.15em;
+}
+
+img.image-thumb {
+   max-width: 1250px;
+}
+
+.title {
+   color: black;
+   font-family: 'Roboto';
+   margin-bottom: 10%;
+   font-size: 1.5em;
+}
+
+h1, h2, h3 {
+   font-family: "Roboto", "Hind", "Helvetica";
+  font-style: italic;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  margin-top: 6rem;
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2.5rem;
+}
+
+h3 {
+  font-size: 2rem;
+}
+
+.blue {
+ color: #1F407A;
+}
