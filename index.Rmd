@@ -65,10 +65,12 @@ Taking the log yields:
 $$
 \ell(p) = \log {n \choose k}+k \log(p)+(n-k)\log(1-p)
 $$
-To obtain the MLE we need to derive $ell(p)$ and solve for zero:
-$$
-\ell'(p) = \frac{k}{p} -\frac{n-k}{1-p} = 0 \Rightarrow 0=\frac{k(1-p)-(n-k)p}{p(1-p)}= \frac{k-np}{p-p^2} \Rightarrow p=\frac{k}{n}.
-$$
+To obtain the MLE we need to derive $\ell(p)$ and solve for zero:
+\begin{align}
+\ell'(p) & = \frac{k}{p} -\frac{n-k}{1-p} \stackrel{!}{=} 0 \\
+ \Rightarrow 0 & = \frac{k(1-p)-(n-k)p}{p(1-p)} = \frac{k-np}{p-p^2}\\
+ \Rightarrow p &=\frac{k}{n}
+\end{align}
 
 Computationally, we do the same. First, we define the likelihood:
 ```{r}
@@ -106,23 +108,23 @@ cat(paste0("The analytical solution for the MLE of p=", k/n))
 
 Plot the likelihood function and its maximum:
 ```{r asdaa, echo=FALSE}
-par(family = "serif")
-curve(binom.likelihood(x, n=n, k=k), from=0, to=1, 
-      col="orange", ylim=c(0, 1), type="l",  axes=F,
-      xlab="p", ylab=expression("l(p)"), col.lab="grey20")
-axis(1, at=seq(0.1, .9, by=.1), label=seq(0.1, .9, by=.1), tick=T, 
-     family="serif", lwd = 0, lwd.ticks = 1, tck=-0.01, col="grey20")
-axis(1, at=seq(0.05, 0.95, by=.1), label=NA,  tick=T, 
-     family="serif", lwd.ticks = NA)
-axis(2, at=seq(0.1, .9, by=.1), label=seq(0.1, .9, by=.1), tick=T, 
-     family="serif", lwd = 0, lwd.ticks = 1, tck=-0.01, col="grey20")
-axis(2, at=seq(0.05, 0.95, by=.1), label=NA,tick=T, 
-     family="serif", lwd.ticks = NA)
-points(p.mle, binom.likelihood(p.mle, n, k) , col="red", lwd=3)
-abline(v = p.mle, col=1, lty=4)
-abline(h = binom.likelihood(p.mle, n, k), col=1, lty=4)
-legend("topright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3), 
-       text.col="grey20", pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
+x <- seq(0, 1, length.out=1000)
+d <- data.frame(x=x, probs=binom.likelihood(x, n=n, k=k))
+
+ggplot() +
+  geom_line(data=d,aes(x=x, y=probs, color="orange")) +
+  scale_x_continuous("p") +
+  scale_y_continuous("L(p)") +
+  ggthemes::theme_tufte(base_size=13) +
+  ggthemes::geom_rangeframe(data=d, aes(x=x, y=probs)) +
+  theme(axis.text=element_text(colour="grey20"),
+        axis.title=element_text(colour="grey20"),
+        axis.ticks=element_line(colour="grey20")) +
+  geom_vline(data=NULL, xintercept=p.mle, lty=4) +
+  geom_hline(data=NULL, yintercept=binom.likelihood(p.mle, n, k), lty=4) +
+  geom_point(data=NULL, aes(x=p.mle, y=binom.likelihood(p.mle, n, k), color="red"), lwd=3) +
+  scale_color_manual("", values=c("orange", "red"), labels=c("Likelihood function", "MLE"))
+                
 ```
 
 ## Bayesian inference
@@ -164,7 +166,7 @@ posterior_values <- sapply(x, function(.) posterior(., n, k))
 ```{r, echo=FALSE}
 tab <- data.frame(x=x, probs=posterior_values)
 ggplot() +
-    geom_line(data = tab, aes(x=x, y=probs)) +
+    geom_line(data = tab, aes(x=x, y=probs), color="orange") +
     scale_x_continuous("p") +
     scale_y_continuous("Density of p") +
     ggthemes::theme_tufte(base_size=13) +
@@ -172,8 +174,9 @@ ggplot() +
     theme(axis.text=element_text(colour="grey20"),
           axis.title=element_text(colour="grey20"),
           axis.ticks=element_line(colour="grey20")) +
-  geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], color="orange") +
-  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=1), hjust=-.15) +
+  geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], lty=4) +
+  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], 
+                           label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=1), hjust=-.15) +
   ggtitle("Posterior distribution")
 ```
 
@@ -193,6 +196,7 @@ Let's visualize it again first.
 tab <- purrr::map_df(c(1, 5, 10), function(p) {
   data.frame(x=0:20, probs=dpois(0:20, lambda=p), lambda=p)
 })
+
 ggplot(tab) +
   geom_col(aes(x=x, y=probs, fill=factor(lambda)), alpha=.75, width = .75, position = "dodge") +
   scale_x_continuous("Number of colonies", breaks=seq(0, 20)) +
@@ -222,9 +226,11 @@ Taking the log yields:
 \end{align}
 
 To obtain the MLE we need to derive $\ell(p)$ and solve for zero:
-$$
-\ell'(\lambda)=-n+\frac{1}{\lambda}\sum_{i=1}^n k_i =0 \Rightarrow \lambda=\frac{1}{n}\sum_{i=1}^n k_i.
-$$
+\begin{align}
+\ell'(\lambda) &= -n+\frac{1}{\lambda}\sum_{i=1}^n k_i \stackrel{!}{=} 0\\
+\Rightarrow \lambda & = \frac{1}{n}\sum_{i=1}^n k_i
+\end{align}
+
 If we do this computationally we define the Poisson likelihood function, as before the Binomial. Here we have to take the product over all bacterial colonies:
 ```{r}
 poisson.likelihood <- function(x, colonies)
@@ -275,22 +281,24 @@ That worked just fine. If you see differences in some of the digits after the co
 
 Let's plot the likelihood function and its maximum again:
 ```{r, echo=FALSE}
-par(family = "serif")
-curve(exp(poisson.log.likelihood(x, colonies=colonies)), from=0, to=10,
-      col="orange", xlab=expression(lambda), type="l", axes=F,
-      ylab=expression("l(p)"), col.lab="grey20")
-axis(1, at=seq(0, 10, by=1), label=seq(0, 10, by=1), tick=T, 
-     family="serif", lwd = 0, lwd.ticks = 1, tck=-0.01, col="grey20")
-axis(1, at=seq(.5, 9, by=1), label=NA,  tick=T, 
-     family="serif", lwd.ticks = NA)
-axis(2, at=c(0, exp(poisson.log.likelihood(p.mle, colonies))),
-     label=c(0, sprintf("%.11f",exp(poisson.log.likelihood(p.mle, colonies)))), tick=T, 
-     family="serif", lwd = 0, lwd.ticks = 1, tck=-0.01, col="grey20")
-points(p.mle, exp(poisson.log.likelihood(p.mle, colonies)), col="red", lwd=3 )
-abline(v = p.mle, col=1, lty=4)
-abline(h = exp(poisson.log.likelihood(p.mle, colonies)), col=1, lty=4)
-legend("topright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3),
-       pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
+x <- seq(0, 10, length.out=1000)
+d <- data.frame(x=x, probs=poisson.likelihood(x, colonies))
+pois.lik <- poisson.likelihood(p.mle, colonies)
+
+ggplot() +
+  geom_line(data=d,aes(x=x, y=probs, color="orange")) +
+  scale_x_continuous("p") +
+  scale_y_continuous("L(p)") +
+  ggthemes::theme_tufte(base_size=13) +
+  ggthemes::geom_rangeframe(data=d, aes(x=x, y=probs)) +
+  theme(axis.text=element_text(colour="grey20"),
+        axis.title=element_text(colour="grey20"),
+        axis.ticks=element_line(colour="grey20")) +
+  geom_vline(data=NULL, xintercept=p.mle, lty=4) +
+  geom_hline(data=NULL, yintercept=pois.lik, lty=4) +
+  geom_point(data=NULL, aes(x=p.mle, y=pois.lik, color="red"), lwd=3) +
+  scale_color_manual("", values=c("orange", "red"), labels=c("Likelihood function", "MLE"))
+                
 ```
 
 If you look at the y-axis you notice the small probability of the likelihood. Here we only used 10 colonies or so and the probability is already diminishingly small. For larger data sets our computers will have precision problems with such small probabilities.
@@ -335,7 +343,7 @@ posterior_values <- sapply(x, function(.) posterior(., colonies))
 ```{r, echo=FALSE}
 tab <- data.frame(x=x, probs=posterior_values)
 ggplot() +
-    geom_line(data = tab, aes(x=x, y=probs)) +
+    geom_line(data = tab, aes(x=x, y=probs), color="orange") +
     scale_x_continuous(expression(lambda)) +
     scale_y_continuous("Density") +
     ggthemes::theme_tufte(base_size=13) +
@@ -343,8 +351,9 @@ ggplot() +
     theme(axis.text=element_text(colour="grey20"),
           axis.title=element_text(colour="grey20"),
           axis.ticks=element_line(colour="grey20")) +
-  geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], color="orange") +
-  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=0.8), hjust=-.15) +
+  geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], lty=4) +
+  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], 
+                           label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=0.8), hjust=-.15) +
   ggtitle("Posterior distribution")
 ```
 

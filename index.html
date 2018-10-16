@@ -165,13 +165,16 @@ X \sim \text{Binom}(n, p)
 <div id="maximum-likelihood" class="section level2">
 <h2>Maximum likelihood</h2>
 <p>To find the <em>maximum likelihood estimate</em> - some guess - for <span class="math inline">\(p\)</span> we can either set the derivative of the likelihood function to <span class="math inline">\(0\)</span> (as we’ll do it in the exercise), or do it computationally. Let’s do the analytical derivation first. The likelihood we are interested in optimizing is given by:</p>
-<p><span class="math display">\[
+<span class="math display">\[
 \mathcal{L}(p)= {n\choose k} p^k(1-p)^{n-k}
 \]</span> Taking the log yields: <span class="math display">\[
 \ell(p) = \log {n \choose k}+k \log(p)+(n-k)\log(1-p)
-\]</span> To obtain the MLE we need to derive <span class="math inline">\(ell(p)\)</span> and solve for zero: <span class="math display">\[
-\ell&#39;(p) = \frac{k}{p} -\frac{n-k}{1-p} = 0 \Rightarrow 0=\frac{k(1-p)-(n-k)p}{p(1-p)}= \frac{k-np}{p-p^2} \Rightarrow p=\frac{k}{n}.
-\]</span></p>
+\]</span> To obtain the MLE we need to derive <span class="math inline">\(\ell(p)\)</span> and solve for zero:
+<span class="math display">\[\begin{align}
+\ell&#39;(p) &amp; = \frac{k}{p} -\frac{n-k}{1-p} \stackrel{!}{=} 0 \\
+ \Rightarrow 0 &amp; = \frac{k(1-p)-(n-k)p}{p(1-p)} = \frac{k-np}{p-p^2}\\
+ \Rightarrow p &amp;=\frac{k}{n}
+\end{align}\]</span>
 <p>Computationally, we do the same. First, we define the likelihood:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">binom.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(p, n, k)
 {
@@ -231,9 +234,12 @@ Taking the log yields:
 &amp; = \sum_{i=1}^n \log \left(\frac{\lambda^{k_i} e^{-\lambda}}{k_i!} \right)= \sum_{i=1}^n \left( -\lambda +k_i \log(\lambda) - \log(k_i!) \right) \\
 &amp;= -n \lambda + \log(\lambda) \sum_{i=1}^n k_i - \sum_{i=1}^n \log(k_i!)
 \end{align}\]</span>
-<p>To obtain the MLE we need to derive <span class="math inline">\(\ell(p)\)</span> and solve for zero: <span class="math display">\[
-\ell&#39;(\lambda)=-n+\frac{1}{\lambda}\sum_{i=1}^n k_i =0 \Rightarrow \lambda=\frac{1}{n}\sum_{i=1}^n k_i.
-\]</span> If we do this computationally we define the Poisson likelihood function, as before the Binomial. Here we have to take the product over all bacterial colonies:</p>
+To obtain the MLE we need to derive <span class="math inline">\(\ell(p)\)</span> and solve for zero:
+<span class="math display">\[\begin{align}
+\ell&#39;(\lambda) &amp;= -n+\frac{1}{\lambda}\sum_{i=1}^n k_i \stackrel{!}{=} 0\\
+\Rightarrow \lambda &amp; = \frac{1}{n}\sum_{i=1}^n k_i
+\end{align}\]</span>
+<p>If we do this computationally we define the Poisson likelihood function, as before the Binomial. Here we have to take the product over all bacterial colonies:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">poisson.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(x, colonies)
 {
   <span class="kw">sapply</span>(x, <span class="cf">function</span>(l) <span class="kw">prod</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>l)))
