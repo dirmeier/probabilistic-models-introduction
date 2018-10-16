@@ -284,7 +284,7 @@ axis(1, at=seq(0, 10, by=1), label=seq(0, 10, by=1), tick=T,
 axis(1, at=seq(.5, 9, by=1), label=NA,  tick=T, 
      family="serif", lwd.ticks = NA)
 axis(2, at=c(0, exp(poisson.log.likelihood(p.mle, colonies))),
-     label=c(0, exp(poisson.log.likelihood(p.mle, colonies))), tick=T, 
+     label=c(0, sprintf("%.11f",exp(poisson.log.likelihood(p.mle, colonies)))), tick=T, 
      family="serif", lwd = 0, lwd.ticks = 1, tck=-0.01, col="grey20")
 points(p.mle, exp(poisson.log.likelihood(p.mle, colonies)), col="red", lwd=3 )
 abline(v = p.mle, col=1, lty=4)
@@ -292,6 +292,9 @@ abline(h = exp(poisson.log.likelihood(p.mle, colonies)), col=1, lty=4)
 legend("topright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3),
        pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
 ```
+
+If you look at the y-axis you notice the small probability of the likelihood. Here we only used 10 colonies or so and the probability is already diminishingly small. For larger data sets our computers will have precision problems with such small probabilities.
+Thus we usually want to compute using the log-likelihood when probailities are involved.
 
 ## Bayesian inference
 
@@ -341,7 +344,7 @@ ggplot() +
           axis.title=element_text(colour="grey20"),
           axis.ticks=element_line(colour="grey20")) +
   geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], color="orange") +
-  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=1), hjust=-.15) +
+  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=0.8), hjust=-.15) +
   ggtitle("Posterior distribution")
 ```
 

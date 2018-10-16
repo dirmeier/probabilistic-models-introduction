@@ -265,6 +265,7 @@ lik &lt;-<span class="st">  </span><span class="kw">poisson.likelihood</span>(<s
 <pre><code>## The mean of the colonies is: 3.91666666666667</code></pre>
 <p>That worked just fine. If you see differences in some of the digits after the comma, this is only due to numerical reasons. Nothing to worry about.</p>
 <p>Let’s plot the likelihood function and its maximum again: <img src="index_files/figure-html/unnamed-chunk-15-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>If you look at the y-axis you notice the small probability of the likelihood. Here we only used 10 colonies or so and the probability is already diminishingly small. For larger data sets our computers will have precision problems with such small probabilities. Thus we usually want to compute using the log-likelihood when probailities are involved.</p>
 </div>
 <div id="bayesian-inference-1" class="section level2">
 <h2>Bayesian inference</h2>
