@@ -359,11 +359,12 @@ ggplot() +
 
 # Markov Chains
 
-Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue $1$.
+Finding the stationary distribution of a Markov chain is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue $1$.
 
 First, we setup the transition matrix:
 ```{r}
 T <- matrix(c(.4, .9, .6, .1), ncol=2)
+T
 ```
 
 Now, we need to find the *left* Eigenvectors of `T`. This is equivalent to finding the *right* Eigenvectors of the transpose of `T`: `t(T)`. 
@@ -386,14 +387,14 @@ We can also do this by hand, but for larger systems this is inefficient:
 &\;   \Rightarrow   \pi_1 = \frac{0.9}{0.6} \pi_2 \\
 \text{(II) } & \;  0.6 \pi_1 + 0.1 \pi_2 = \pi_2\\
 \text{(III) } & \;  \pi_1 + \pi_2 = 1\\
-\text{Plugging (I) into (III): } & \; \frac{0.9}{0.6} \pi_2 + \pi_2 = 1\\ 
+\text{Plugging (I) into (III) } & \; \frac{0.9}{0.6} \pi_2 + \pi_2 = 1\\ 
 				&\;   \Rightarrow   \pi_2 = 0.4 \\
 				&\;   \Rightarrow   \pi_1 = 0.6 \\
 \end{align*}
 
 # Bayesian networks
 
-To work with Bayesian networks we first load some libraries:
+Bayesian networks are joint probability distributions where conditional independence relations are encoded using d-separation statements over a directed acyclic graph. To work with Bayesian networks in `R` we first load some libraries:
 
 ```{r, echo=TRUE, include=TRUE, warning=FALSE, message=FALSE}
 library(bnlearn)

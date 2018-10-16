@@ -289,9 +289,13 @@ posterior_values &lt;-<span class="st"> </span><span class="kw">sapply</span>(x,
 </div>
 <div id="markov-chains" class="section level1">
 <h1>Markov Chains</h1>
-<p>Finding the stationary distribution of an MC, is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue <span class="math inline">\(1\)</span>.</p>
+<p>Finding the stationary distribution of a Markov chain is essentially an Eigenvalue problem, where we look for the left Eigenvectors of a transition matrix for the Eigenvalue <span class="math inline">\(1\)</span>.</p>
 <p>First, we setup the transition matrix:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">T &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(.<span class="dv">4</span>, .<span class="dv">9</span>, .<span class="dv">6</span>, .<span class="dv">1</span>), <span class="dt">ncol=</span><span class="dv">2</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">T &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(.<span class="dv">4</span>, .<span class="dv">9</span>, .<span class="dv">6</span>, .<span class="dv">1</span>), <span class="dt">ncol=</span><span class="dv">2</span>)
+T</code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]  0.4  0.6
+## [2,]  0.9  0.1</code></pre>
 <p>Now, we need to find the <em>left</em> Eigenvectors of <code>T</code>. This is equivalent to finding the <em>right</em> Eigenvectors of the transpose of <code>T</code>: <code>t(T)</code>. The stationary distribution is <em>unique</em> for ergodic Markov chains and independent of the starting distribution.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ev &lt;-<span class="st"> </span><span class="kw">eigen</span>(<span class="kw">t</span>(T))
 ev</code></pre></div>
@@ -314,14 +318,14 @@ We can also do this by hand, but for larger systems this is inefficient:
 &amp;\;   \Rightarrow   \pi_1 = \frac{0.9}{0.6} \pi_2 \\
 \text{(II) } &amp; \;  0.6 \pi_1 + 0.1 \pi_2 = \pi_2\\
 \text{(III) } &amp; \;  \pi_1 + \pi_2 = 1\\
-\text{Plugging (I) into (III): } &amp; \; \frac{0.9}{0.6} \pi_2 + \pi_2 = 1\\ 
+\text{Plugging (I) into (III) } &amp; \; \frac{0.9}{0.6} \pi_2 + \pi_2 = 1\\ 
                 &amp;\;   \Rightarrow   \pi_2 = 0.4 \\
                 &amp;\;   \Rightarrow   \pi_1 = 0.6 \\
 \end{align*}\]</span>
 </div>
 <div id="bayesian-networks" class="section level1">
 <h1>Bayesian networks</h1>
-<p>To work with Bayesian networks we first load some libraries:</p>
+<p>Bayesian networks are joint probability distributions where conditional independence relations are encoded using d-separation statements over a directed acyclic graph. To work with Bayesian networks in <code>R</code> we first load some libraries:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(bnlearn)
 <span class="kw">library</span>(tibble)</code></pre></div>
 <p>Then, we create the data just as in the exercise:</p>
