@@ -3,7 +3,7 @@ title: "Introduction to Probabilistic Models"
 ---
 
 ```{r setup, include=FALSE}
-  knitr::opts_chunk$set(echo = TRUE, fig.align='center', fig.width=10)
+  knitr::opts_chunk$set(echo = TRUE, fig.align='center', fig.width=10, warning=FALSE)
   library(tidyverse)
 ```
 
@@ -52,7 +52,9 @@ ggplot(tab) +
         axis.ticks=element_line(colour="grey20"))
 ```
 
-For this simulation I set the success probability to $p = 0.7$. Thus, **beware**, since we mostly look at samples of small size, we sometimes make wrong guesses about the parameter of interest.
+For this simulation I set the success probability to $p = 0.7$, even though the data would imply $p=0.8$ (just look at the largest bar and divide by size $n=10$). Thus, **beware**, since we mostly look at samples of small size, we sometimes make wrong guesses about the parameter of interest.
+
+## Maximum likelihood
 
 To find the *maximum likelihood estimate* - some guess - for $p$ we can either set the derivative of the likelihood function to $0$ (as we'll do it in the exercise), or do it computationally. Let's do the analytical derivation first. The likelihood we are interested in optimizing is given by:
 
@@ -103,7 +105,7 @@ cat(paste0("The analytical solution for the MLE of p=", k/n))
 ```
 
 Plot the likelihood function and its maximum:
-```{r, echo=FALSE}
+```{r asdaa, echo=FALSE}
 par(family = "serif")
 curve(binom.likelihood(x, n=n, k=k), from=0, to=1, 
       col="orange", ylim=c(0, 1), type="l",  axes=F,
@@ -123,13 +125,68 @@ legend("topright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3),
        text.col="grey20", pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
 ```
 
+## Bayesian inference
+
+We can alternatively compute an estimate of $p$ using a Bayesian approach. Here, we would think of our parameter as a random variable that has a ddistribution. Since we are looking at a parameter that has domain $p = [0, 1]$ a reasonable prior *could* be a Beta distribution (because of its domain and the fact that it's conjugate). The plot below visualizes the Beta distribution for some hyperparameter settings.
+
+```{r sda, echo=FALSE}
+x <- seq(0, 1, length.out=1000)
+tab <- dplyr::bind_rows(list(
+  data.frame(Parameters="a=0.5, b=0.5", x=x, prob=dbeta(x, .5, 0.5)),
+  data.frame(Parameters="a=1, b=2", x=x, prob=dbeta(x, 1, 2)),
+  data.frame(Parameters="a=2, b=1", x=x, prob=dbeta(x, 2, 1)),
+  data.frame(Parameters="a=1, b=1", x=x, prob=dbeta(x, 1, 1))))
+
+ggplot(tab) +
+  geom_line(aes(x=x, y=prob, color=Parameters)) +
+  scale_x_continuous("p") +
+  scale_y_continuous("Density of p") +
+  ggthemes::theme_tufte(base_size=13) +
+  ggthemes::geom_rangeframe(aes(x=x, y=prob)) +
+  theme(axis.text=element_text(colour="grey20"),
+        axis.title=element_text(colour="grey20"),
+        axis.ticks=element_line(colour="grey20")) +
+  scale_color_manual(values=c("orange", 1, 1, 1)) +
+  ggtitle("Different prior distributions")
+```
+
+The difference here to the frequentist approach, among other things, is that our estimate of the parameter is again a distribution, the *posterior*. In this example we use a prior with hyperparameters $a=0.5$ and $b=0.5$. Since the Beta distribution is conjugate to the Binomial, the posterior will also be a Beta distribution:
+
+```{r}
+posterior <- function(p, n, k) 
+{
+ dbeta(p, 0.5 + k, 0.5 + n - k)
+}
+
+posterior_values <- sapply(x, function(.) posterior(., n, k))
+```
+
+```{r, echo=FALSE}
+tab <- data.frame(x=x, probs=posterior_values)
+ggplot() +
+    geom_line(data = tab, aes(x=x, y=probs)) +
+    scale_x_continuous("p") +
+    scale_y_continuous("Density of p") +
+    ggthemes::theme_tufte(base_size=13) +
+    ggthemes::geom_rangeframe(data = tab, aes(x=x, y=probs)) +
+    theme(axis.text=element_text(colour="grey20"),
+          axis.title=element_text(colour="grey20"),
+          axis.ticks=element_line(colour="grey20")) +
+  geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], color="orange") +
+  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=1), hjust=-.15) +
+  ggtitle("Posterior distribution")
+```
+
+Thus Bayesian inference of a parameter can be thought of as *analysis of beliefs* ([Larry Wasserman](https://normaldeviate.wordpress.com/2012/11/17/what-is-bayesianfrequentist-inference/)), where we update our knowledge of some parameter (*prior*) in the context of data (giving us the *posterior*).
+
 # Bacteria and Petri dishes
 
 The Poisson distribution models the number of events $k$ that happen in a fixed time-interval. It is usually parametrized by a mean value $\lambda$:
 $$
 X \sim \text{Pois}(\lambda)
 $$
-One (very abstract) example to think of the Poisson distribution is the number of bacterial colonies in different Petri dishes. On average we would expect to observe $\lambda$ many colonies per dish, however due to stochasticity, such as food availability or space to grow the numbers per dish might vary.
+One (very abstract) example to think of the Poisson distribution is the number of bacterial colonies in different Petri dishes. 
+On average we would expect to observe $\lambda$ many colonies per dish, however due to stochasticity, such as food availability or space to grow the numbers per dish might vary.
 
 Let's visualize it again first.
 ```{r, fig.align='center', echo=FALSE}
@@ -146,6 +203,8 @@ ggplot(tab) +
         axis.title=element_text(colour="grey20"),
         axis.ticks=element_line(colour="grey20"))
 ```
+
+## Maximum likelihood
 
 As before we usually do not know the true parameter that governs the number of colonies, so we have to estimate it from a finite sample.
 And as before we choose to use the maximum likelihood estimator to find the mass function's parameter which in this case is $\lambda$.
@@ -166,12 +225,11 @@ To obtain the MLE we need to derive $\ell(p)$ and solve for zero:
 $$
 \ell'(\lambda)=-n+\frac{1}{\lambda}\sum_{i=1}^n k_i =0 \Rightarrow \lambda=\frac{1}{n}\sum_{i=1}^n k_i.
 $$
-
-If we do this computationally we define the Poisson likelihood function, as before the Binomial:
+If we do this computationally we define the Poisson likelihood function, as before the Binomial. Here we have to take the product over all bacterial colonies:
 ```{r}
 poisson.likelihood <- function(x, colonies)
 {
-  sapply(x, function(x1) prod(dpois(x=colonies, lambda=x1)))
+  sapply(x, function(l) prod(dpois(x=colonies, lambda=l)))
 }
 ```
 
@@ -187,17 +245,16 @@ cat(paste0("The Likelihood for lambda=5 is: ", lik))
 For that reason we use some example data for the next steps.
 
 ```{r}
-colonies <- c(1,2,4,5,7,2,3,5,6,3,7,2)
+colonies <- c(1 ,2, 4, 5, 7, 2, 3, 5, 6, 3, 7, 2)
 ```
 
 Furthermore, since we compute products of probabilities, it makes sense to work in a log-space. Thus, we define the log-likelihood: 
 ```{r}
 poisson.log.likelihood <- function(x, colonies)
 {
-  sapply(x, function(x1) sum(log(dpois(x=colonies, lambda=x1))))
+  sapply(x, function(l) sum(log(dpois(x=colonies, lambda=l))))
 }
 ```
-As noted before, usually people do optimization on the negative log-likelihood, but it really doesn't matter.
 
 Then let's optimize the likelihood with the same procedure as before.
 ```{r}
@@ -234,6 +291,58 @@ abline(v = p.mle, col=1, lty=4)
 abline(h = exp(poisson.log.likelihood(p.mle, colonies)), col=1, lty=4)
 legend("topright", col=c("orange", "red"), lty=c(1, 0), lwd=c(1, 3),
        pch=c(-1, 1), c("Likelihood function", "MLE"), box.lty=0)
+```
+
+## Bayesian inference
+
+As before, we could infer the parameters in a Bayesian fashion. In order to avoid sampling or variational approximations, we go with a conjugate prior again, which for a Poisson model is the Gamma distribution:
+
+```{r, echo=FALSE}
+x <- seq(0, 20, length.out=1000)
+tab <- dplyr::bind_rows(list(
+  data.frame(Parameters="shape=1", x=x, prob=dgamma(x, 1)),
+  data.frame(Parameters="shape=2", x=x, prob=dgamma(x, 2)),
+  data.frame(Parameters="shape=10", x=x, prob=dgamma(x, 10)),
+  data.frame(Parameters="shape=5", x=x, prob=dgamma(x, 5))))
+
+ggplot(tab) +
+  geom_line(aes(x=x, y=prob, color=Parameters)) +
+  scale_x_continuous(expression(lambda)) +
+  scale_y_continuous("Density") +
+  ggthemes::theme_tufte(base_size=13) +
+  ggthemes::geom_rangeframe(aes(x=x, y=prob)) +
+  theme(axis.text=element_text(colour="grey20"),
+        axis.title=element_text(colour="grey20"),
+        axis.ticks=element_line(colour="grey20")) +
+  scale_color_manual(values=c("orange", 1, 1, 1)) + 
+ggtitle("Different prior distributions")
+```
+
+The assume a Gamma prior with shape $\alpha = 1$ and scale $\beta = 1$. The posterior is then computed as:
+
+```{r}
+posterior <- function(lambda, d) 
+{
+  dgamma(lambda, 1 + sum(d), 1 + length(d))
+}
+
+posterior_values <- sapply(x, function(.) posterior(., colonies))
+```
+
+```{r, echo=FALSE}
+tab <- data.frame(x=x, probs=posterior_values)
+ggplot() +
+    geom_line(data = tab, aes(x=x, y=probs)) +
+    scale_x_continuous(expression(lambda)) +
+    scale_y_continuous("Density") +
+    ggthemes::theme_tufte(base_size=13) +
+    ggthemes::geom_rangeframe(data = tab, aes(x=x, y=probs)) +
+    theme(axis.text=element_text(colour="grey20"),
+          axis.title=element_text(colour="grey20"),
+          axis.ticks=element_line(colour="grey20")) +
+  geom_vline(data=NULL, xintercept=x[which.max(posterior_values)], color="orange") +
+  geom_text(data=NULL, aes(x=x[which.max(posterior_values)], label=paste0("Mode at: ", sprintf("%.2f",  x[which.max(posterior_values)])), y=1), hjust=-.15) +
+  ggtitle("Posterior distribution")
 ```
 
 # Markov Chains

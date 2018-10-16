@@ -161,7 +161,9 @@ X \sim \text{Binom}(n, p)
 <p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>Usually, however, we only observe a finite sample of which we don’t know its parameter, thus we need to <em>guess</em> them. What’s do you think is the parameter in the example below?</p>
 <p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="960" style="display: block; margin: auto;" /></p>
-<p>For this simulation I set the success probability to <span class="math inline">\(p = 0.7\)</span>. Thus, <strong>beware</strong>, since we mostly look at samples of small size, we sometimes make wrong guesses about the parameter of interest.</p>
+<p>For this simulation I set the success probability to <span class="math inline">\(p = 0.7\)</span>, even though the data would imply <span class="math inline">\(p=0.8\)</span> (just look at the largest bar and divide by size <span class="math inline">\(n=10\)</span>). Thus, <strong>beware</strong>, since we mostly look at samples of small size, we sometimes make wrong guesses about the parameter of interest.</p>
+<div id="maximum-likelihood" class="section level2">
+<h2>Maximum likelihood</h2>
 <p>To find the <em>maximum likelihood estimate</em> - some guess - for <span class="math inline">\(p\)</span> we can either set the derivative of the likelihood function to <span class="math inline">\(0\)</span> (as we’ll do it in the exercise), or do it computationally. Let’s do the analytical derivation first. The likelihood we are interested in optimizing is given by:</p>
 <p><span class="math display">\[
 \mathcal{L}(p)= {n\choose k} p^k(1-p)^{n-k}
@@ -194,14 +196,31 @@ k &lt;-<span class="st"> </span><span class="kw">sum</span>(tosses <span class="
 <pre><code>## The MLE using &#39;optimize&#39; of p=0.399998229931391</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The analytical solution for the MLE of p=&quot;</span>, k<span class="op">/</span>n))</code></pre></div>
 <pre><code>## The analytical solution for the MLE of p=0.4</code></pre>
-<p>Plot the likelihood function and its maximum: <img src="index_files/figure-html/unnamed-chunk-6-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Plot the likelihood function and its maximum: <img src="index_files/figure-html/asdaa-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="bayesian-inference" class="section level2">
+<h2>Bayesian inference</h2>
+<p>We can alternatively compute an estimate of <span class="math inline">\(p\)</span> using a Bayesian approach. Here, we would think of our parameter as a random variable that has a ddistribution. Since we are looking at a parameter that has domain <span class="math inline">\(p = [0, 1]\)</span> a reasonable prior <em>could</em> be a Beta distribution (because of its domain and the fact that it’s conjugate). The plot below visualizes the Beta distribution for some hyperparameter settings.</p>
+<p><img src="index_files/figure-html/sda-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>The difference here to the frequentist approach, among other things, is that our estimate of the parameter is again a distribution, the <em>posterior</em>. In this example we use a prior with hyperparameters <span class="math inline">\(a=0.5\)</span> and <span class="math inline">\(b=0.5\)</span>. Since the Beta distribution is conjugate to the Binomial, the posterior will also be a Beta distribution:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">posterior &lt;-<span class="st"> </span><span class="cf">function</span>(p, n, k) 
+{
+ <span class="kw">dbeta</span>(p, <span class="fl">0.5</span> <span class="op">+</span><span class="st"> </span>k, <span class="fl">0.5</span> <span class="op">+</span><span class="st"> </span>n <span class="op">-</span><span class="st"> </span>k)
+}
+
+posterior_values &lt;-<span class="st"> </span><span class="kw">sapply</span>(x, <span class="cf">function</span>(.) <span class="kw">posterior</span>(., n, k))</code></pre></div>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Thus Bayesian inference of a parameter can be thought of as <em>analysis of beliefs</em> (<a href="https://normaldeviate.wordpress.com/2012/11/17/what-is-bayesianfrequentist-inference/">Larry Wasserman</a>), where we update our knowledge of some parameter (<em>prior</em>) in the context of data (giving us the <em>posterior</em>).</p>
+</div>
 </div>
 <div id="bacteria-and-petri-dishes" class="section level1">
 <h1>Bacteria and Petri dishes</h1>
 <p>The Poisson distribution models the number of events <span class="math inline">\(k\)</span> that happen in a fixed time-interval. It is usually parametrized by a mean value <span class="math inline">\(\lambda\)</span>: <span class="math display">\[
 X \sim \text{Pois}(\lambda)
 \]</span> One (very abstract) example to think of the Poisson distribution is the number of bacterial colonies in different Petri dishes. On average we would expect to observe <span class="math inline">\(\lambda\)</span> many colonies per dish, however due to stochasticity, such as food availability or space to grow the numbers per dish might vary.</p>
-<p>Let’s visualize it again first. <img src="index_files/figure-html/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Let’s visualize it again first. <img src="index_files/figure-html/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
+<div id="maximum-likelihood-1" class="section level2">
+<h2>Maximum likelihood</h2>
 <p>As before we usually do not know the true parameter that governs the number of colonies, so we have to estimate it from a finite sample. And as before we choose to use the maximum likelihood estimator to find the mass function’s parameter which in this case is <span class="math inline">\(\lambda\)</span>.</p>
 <p>Let’s again do the analytical derivation first. The likelihood we are interested in optimizing is given by:</p>
 <p><span class="math display">\[ \mathcal{L} (\lambda) = \prod_{i=1}^n f(k_i; \lambda)= \prod_{i=1}^n \frac{\lambda^{k_i} e^{-\lambda}}{k_i!},\]</span><br />
@@ -214,11 +233,10 @@ Taking the log yields:
 \end{align}\]</span>
 <p>To obtain the MLE we need to derive <span class="math inline">\(\ell(p)\)</span> and solve for zero: <span class="math display">\[
 \ell&#39;(\lambda)=-n+\frac{1}{\lambda}\sum_{i=1}^n k_i =0 \Rightarrow \lambda=\frac{1}{n}\sum_{i=1}^n k_i.
-\]</span></p>
-<p>If we do this computationally we define the Poisson likelihood function, as before the Binomial:</p>
+\]</span> If we do this computationally we define the Poisson likelihood function, as before the Binomial. Here we have to take the product over all bacterial colonies:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">poisson.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(x, colonies)
 {
-  <span class="kw">sapply</span>(x, <span class="cf">function</span>(x1) <span class="kw">prod</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>x1)))
+  <span class="kw">sapply</span>(x, <span class="cf">function</span>(l) <span class="kw">prod</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>l)))
 }</code></pre></div>
 <p>Then let’s evaluate the likelihood for <span class="math inline">\(3\)</span> colonies and <span class="math inline">\(\lambda = 5\)</span>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colonies &lt;-<span class="st"> </span><span class="dv">3</span>
@@ -227,13 +245,12 @@ lik &lt;-<span class="st">  </span><span class="kw">poisson.likelihood</span>(<s
 <span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The Likelihood for lambda=5 is: &quot;</span>, lik))</code></pre></div>
 <pre><code>## The Likelihood for lambda=5 is: 0.140373895814281</code></pre>
 <p><strong>NOTE</strong>: generally it is a bad idea to rely on the MLE with such a low sample size (here <span class="math inline">\(1\)</span>). For that reason we use some example data for the next steps.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colonies &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">7</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">3</span>,<span class="dv">7</span>,<span class="dv">2</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colonies &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span> ,<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">3</span>, <span class="dv">7</span>, <span class="dv">2</span>)</code></pre></div>
 <p>Furthermore, since we compute products of probabilities, it makes sense to work in a log-space. Thus, we define the log-likelihood:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">poisson.log.likelihood &lt;-<span class="st"> </span><span class="cf">function</span>(x, colonies)
 {
-  <span class="kw">sapply</span>(x, <span class="cf">function</span>(x1) <span class="kw">sum</span>(<span class="kw">log</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>x1))))
+  <span class="kw">sapply</span>(x, <span class="cf">function</span>(l) <span class="kw">sum</span>(<span class="kw">log</span>(<span class="kw">dpois</span>(<span class="dt">x=</span>colonies, <span class="dt">lambda=</span>l))))
 }</code></pre></div>
-<p>As noted before, usually people do optimization on the negative log-likelihood, but it really doesn’t matter.</p>
 <p>Then let’s optimize the likelihood with the same procedure as before.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p.mle &lt;-<span class="st"> </span><span class="kw">optimize</span>(poisson.log.likelihood,
                   <span class="dt">interval=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1000</span>),
@@ -247,7 +264,21 @@ lik &lt;-<span class="st">  </span><span class="kw">poisson.likelihood</span>(<s
 <span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;The mean of the colonies is: &quot;</span>, m.c))</code></pre></div>
 <pre><code>## The mean of the colonies is: 3.91666666666667</code></pre>
 <p>That worked just fine. If you see differences in some of the digits after the comma, this is only due to numerical reasons. Nothing to worry about.</p>
-<p>Let’s plot the likelihood function and its maximum again: <img src="index_files/figure-html/unnamed-chunk-14-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Let’s plot the likelihood function and its maximum again: <img src="index_files/figure-html/unnamed-chunk-15-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="bayesian-inference-1" class="section level2">
+<h2>Bayesian inference</h2>
+<p>As before, we could infer the parameters in a Bayesian fashion. In order to avoid sampling or variational approximations, we go with a conjugate prior again, which for a Poisson model is the Gamma distribution:</p>
+<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>The assume a Gamma prior with shape <span class="math inline">\(\alpha = 1\)</span> and scale <span class="math inline">\(\beta = 1\)</span>. The posterior is then computed as:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">posterior &lt;-<span class="st"> </span><span class="cf">function</span>(lambda, d) 
+{
+  <span class="kw">dgamma</span>(lambda, <span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">sum</span>(d), <span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">length</span>(d))
+}
+
+posterior_values &lt;-<span class="st"> </span><span class="kw">sapply</span>(x, <span class="cf">function</span>(.) <span class="kw">posterior</span>(., colonies))</code></pre></div>
+<p><img src="index_files/figure-html/unnamed-chunk-18-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
 </div>
 <div id="markov-chains" class="section level1">
 <h1>Markov Chains</h1>
@@ -316,7 +347,7 @@ arc.set &lt;-<span class="st"> </span><span class="kw">matrix</span>(
   <span class="dt">dimnames =</span> <span class="kw">list</span>(<span class="ot">NULL</span>, <span class="kw">c</span>(<span class="st">&quot;from&quot;</span>, <span class="st">&quot;to&quot;</span>)))
 <span class="kw">arcs</span>(dag) &lt;-<span class="st"> </span>arc.set
 <span class="kw">plot</span>(dag)</code></pre></div>
-<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-24-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>Then, we compute the local probability tables (the parameters):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  fit &lt;-<span class="st"> </span><span class="kw">bn.fit</span>(dag, df)
   fit</code></pre></div>
