@@ -10,7 +10,7 @@ in the exercise to familiarize people with the the theoretical concepts.
 
 ## Author
 
-* Simon Dirmeier <a href="mailto:simon.dirmeier@bsse.ethz.ch">simon.dirmeier@bsse.ethz.ch</a>
+Simon Dirmeier <a href="mailto:simon.dirmeier@web.de">simon.dirmeier @ web.de</a>
 
 ## License
 
